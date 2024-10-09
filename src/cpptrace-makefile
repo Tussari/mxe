@@ -1,0 +1,43 @@
+SRC_FILES := $(shell find src -type f -name '*.cpp')
+OBJ_FILES := $(SRC_FILES:src/%.cpp=$(BUILD_DIR)/%.o)
+LIB_FILE  := $(BUILD_DIR)/libcpptrace.a
+PC_FILE   := $(BUILD_DIR)/cpptrace.pc
+
+CXXFLAGS := \
+    -std=c++20 \
+    -Iinclude \
+    -Isrc \
+    $(shell $(PKGCONF) --cflags libdwarf) \
+    -DCPPTRACE_STATIC_DEFINE \
+    -DCPPTRACE_DEMANGLE_WITH_CXXABI \
+    -DCPPTRACE_UNWIND_WITH_WINAPI \
+    -DCPPTRACE_GET_SYMBOLS_WITH_LIBDWARF
+
+default: $(LIB_FILE)
+
+install: $(LIB_FILE)
+	echo "Name: cpptrace"                           > $(PC_FILE)
+	echo "Version: 0.7.2"                           >> $(PC_FILE)
+	echo "Description: cpptrace"                    >> $(PC_FILE)
+	echo "Requires:"                                >> $(PC_FILE)
+	echo "Libs: -lcpptrace -ldwarf -lzstd -lz"      >> $(PC_FILE)
+	echo "Cflags.private: -DCPPTRACE_STATIC_DEFINE" >> $(PC_FILE)
+	install -d $(PREFIX)/lib/
+	install -d $(PREFIX)/include/cpptrace
+	install -m 644 $(LIB_FILE)                       $(PREFIX)/lib
+	install -m 644 $(PC_FILE)                        $(PREFIX)/lib/pkgconfig
+	install -m 644 include/cpptrace/basic.hpp        $(PREFIX)/include/cpptrace
+	install -m 644 include/cpptrace/cpptrace.hpp     $(PREFIX)/include/cpptrace
+	install -m 644 include/cpptrace/exceptions.hpp   $(PREFIX)/include/cpptrace
+	install -m 644 include/cpptrace/forward.hpp      $(PREFIX)/include/cpptrace
+	install -m 644 include/cpptrace/from_current.hpp $(PREFIX)/include/cpptrace
+	install -m 644 include/cpptrace/io.hpp           $(PREFIX)/include/cpptrace
+	install -m 644 include/cpptrace/utils.hpp        $(PREFIX)/include/cpptrace
+	install -m 644 include/ctrace/ctrace.h           $(PREFIX)/include/ctrace
+
+$(BUILD_DIR)/%.o: src/%.cpp
+	mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(LIB_FILE): $(OBJ_FILES)
+	$(AR) rcs $@ $^
