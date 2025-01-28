@@ -24,6 +24,7 @@ install: $(LIB_FILE)
 	echo "Cflags.private: -DCPPTRACE_STATIC_DEFINE" >> $(PC_FILE)
 	install -d $(PREFIX)/lib/
 	install -d $(PREFIX)/include/cpptrace
+	install -d $(PREFIX)/include/ctrace
 	install -m 644 $(LIB_FILE)                       $(PREFIX)/lib
 	install -m 644 $(PC_FILE)                        $(PREFIX)/lib/pkgconfig
 	install -m 644 include/cpptrace/basic.hpp        $(PREFIX)/include/cpptrace
